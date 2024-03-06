@@ -1,0 +1,63 @@
+#lang racket
+(provide (all-defined-out))
+(require sicp-pict)
+;(paint einstein)
+(define wave mark-of-zorro)
+
+(define wave2 (beside wave (flip-vert wave))) 
+
+(define wave4 (below wave2 wave2))
+
+(define (flipped-pairs painter) 
+   (let ((painter2 (beside painter (flip-vert painter)))) 
+     (below painter2 painter2)))
+
+(define wave4a (flipped-pairs wave))
+
+(define (right-split painter n) 
+   (if (= n 0) 
+       painter 
+       (let ((smaller (right-split painter (- n 1)))) 
+         (beside painter (below smaller smaller)))))
+
+(define (up-split painter n) 
+   (if (= n 0) 
+       painter 
+       (let ((smaller (up-split painter (- n 1)))) 
+         (below painter (beside smaller smaller)))))
+
+(define (corner-split painter n) 
+   (if (= n 0) 
+       painter 
+       (let ((up (up-split painter (- n 1))) 
+             (right (right-split painter (- n 1)))) 
+         (let ((top-left (beside up up)) 
+               (bottom-right (below right right)) 
+               (corner (corner-split painter (- n 1)))) 
+           (beside (below painter top-left) 
+                   (below bottom-right corner))))))
+
+
+(define (square-limit painter n) 
+   (let ((quarter (corner-split painter n))) 
+     (let ((half (beside (flip-horiz quarter) quarter))) 
+       (below (flip-vert half) half))))
+
+;(paint (right-split einstein 3))
+;(paint (up-split einstein 3))
+;(paint (corner-split einstein 2))
+;(paint (square-limit einstein 3))
+;(paint (square-limit wave 4))
+
+(define (split op1 op2)
+  (lambda (painter n)
+    (if (= n 0)
+        painter
+        (let ((smaller ((split op1 op2) painter (- n 1))))
+          (op1 painter (op2 smaller smaller))))))
+
+(define right-split2 (split beside below))
+(define up-split2 (split below beside))
+
+(paint (right-split2 einstein 3))
+(paint (up-split2 einstein 3))
